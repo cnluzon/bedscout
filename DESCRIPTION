@@ -1,12 +1,18 @@
 Package: bedscout
-Title: What the Package Does (One Line, Title Case)
+Title: Simple arithmetic and visualizations on BED files
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Carmen", "Navarro", , "carmen.navarro@scilifelab.se", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5438-9654"))
+Description: bedscout is a small toolset to calculate intersection statistics
+  among BED files and/or GRanges objects and visualize them in a comprehensive
+  way.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Imports: GenomicRanges,
+    IRanges
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
