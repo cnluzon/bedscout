@@ -50,4 +50,34 @@ jaccard_index <- function(gr1, gr2, ignore.strand = TRUE) {
 }
 
 
-
+#' Calculate fold change enrichment of a GRanges object's overlap with another
+#' GRanges object based on genome size.
+#'
+#' The intuitive idea of this metric is how unlikely is to have that overlap by
+#' chance given the size of the genome and the respective sizes of the ranges.
+#' The value can be understood as x times the random chance.
+#'
+#' enrichment = (length(intersection) / length(gr2)) / (length(gr1) / genome_size)
+#'
+#' This was originally taken from how ChromHMM calculates enrichment, and it is
+#' a commutative operation: enrichment(gr1, gr2, size) == enrichment(gr2, gr1, size)
+#'
+#' @param gr1 A GRanges object
+#' @param gr2 Another GRanges object
+#' @param genome_size Genome size
+#' @param ignore.strand If FALSE, only matching strand overlaps are counted
+#'
+#' @importFrom GenomicRanges width
+#' @return A numeric value for the fc enrichment
+#' @export
+#'
+#' @examples
+#' gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+#' gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+#' fc_enrichment(gr_1, gr_2, 30, ignore.strand = TRUE)
+fc_enrichment <- function(gr1, gr2, genome_size, ignore.strand = TRUE) {
+    overlap <- total_bp_overlap(gr1, gr2, ignore.strand = ignore.strand)
+    gr1_size <- sum(GenomicRanges::width(gr1))
+    gr2_size <- sum(GenomicRanges::width(gr2))
+    (overlap / gr2_size) / (gr1_size / genome_size)
+}

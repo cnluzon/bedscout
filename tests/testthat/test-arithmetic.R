@@ -27,3 +27,39 @@ test_that("jaccard_index() calculates correct value when ignore.strand = FALSE",
 
   expect_equal(jaccard_index(gr_1, gr_2, ignore.strand = FALSE), 0)
 })
+
+test_that("fc_enrichment() calculates correct value", {
+  gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+  gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+  gsize <- 30
+
+  expect_equal(fc_enrichment(gr_1, gr_2, gsize, ignore.strand = TRUE), 1.487603306)
+})
+
+test_that("fc_enrichment() calculates correct value with ignore.strand = FALSE", {
+  gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+  gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+  gsize <- 30
+
+  expect_equal(fc_enrichment(gr_1, gr_2, gsize, ignore.strand = FALSE), 0)
+})
+
+test_that("fc_enrichment() increases with higher gsize ignore.strand = FALSE", {
+  gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+  gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+  gsize <- 30
+
+  enrichment_1 <- fc_enrichment(gr_1, gr_2, gsize, ignore.strand = TRUE)
+  enrichment_2 <- fc_enrichment(gr_1, gr_2, gsize + 20, ignore.strand = TRUE)
+  expect_true(enrichment_1 < enrichment_2)
+})
+
+test_that("fc_enrichment() is commutative", {
+  gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+  gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+  gsize <- 30
+
+  enrichment_1 <- fc_enrichment(gr_1, gr_2, gsize, ignore.strand = TRUE)
+  enrichment_2 <- fc_enrichment(gr_2, gr_1, gsize, ignore.strand = TRUE)
+  expect_equal(enrichment_1, enrichment_2)
+})
