@@ -16,7 +16,10 @@ account.}
 A GRanges object containing overlapping loci
 }
 \description{
-Note that if only one element is in the list, it returns the same list.
+Note that if only one element is in the list, it returns the same list, but
+reducing overlapping ranges within it to 1. This is to keep consistency on
+the venn diagrams, since elements that have overlapping loci will be counted
+twice.
 }
 \examples{
 gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
