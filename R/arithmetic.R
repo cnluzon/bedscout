@@ -81,3 +81,32 @@ fc_enrichment <- function(gr1, gr2, genome_size, ignore.strand = TRUE) {
     gr2_size <- sum(GenomicRanges::width(gr2))
     (overlap / gr2_size) / (gr1_size / genome_size)
 }
+
+
+#' Calculate the number of loci that overlap between two GRanges objects
+#' (ignoring length).
+#'
+#' Note that this is *NOT a commutative operation, since one locus in gr1 could
+#' overlap with > 1 locus in gr2, and viceversa. It is what is used generally
+#' on venn diagrams, which is why those do not usually add up completely.
+#' However, if there is not highly fragmentation difference, results should not
+#' be extremely different.
+#'
+#' @param gr1 A GRanges object
+#' @param gr2 A GRanges object
+#' @param ignore.strand If FALSE, not matching strands will not be counted.
+#' @param minoverlap Minimum overlap in bp to consider this an overlap
+#'
+#' @importFrom IRanges subsetByOverlaps
+#' @return An integer total number of loci in gr1 that overlap with any locus in gr2
+#' @export
+#'
+#' @examples
+loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
+   length(
+     IRanges::subsetByOverlaps(gr1, gr2,
+        minoverlap = minoverlap,
+        ignore.strand = ignore.strand
+      )
+    )
+}

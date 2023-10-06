@@ -2,8 +2,10 @@
 
 export(fc_enrichment)
 export(jaccard_index)
+export(loci_overlap)
 export(total_bp_overlap)
 importClassesFrom(GenomicRanges,GRanges)
 importClassesFrom(IRanges,IRanges)
 importFrom(GenomicRanges,intersect)
 importFrom(GenomicRanges,width)
+importFrom(IRanges,subsetByOverlaps)

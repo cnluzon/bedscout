@@ -63,3 +63,23 @@ test_that("fc_enrichment() is commutative", {
   enrichment_2 <- fc_enrichment(gr_2, gr_1, gsize, ignore.strand = TRUE)
   expect_equal(enrichment_1, enrichment_2)
 })
+
+test_that("loci_overlap() returns correct values", {
+  gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+  gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+
+  overlap <- loci_overlap(gr_1, gr_2, ignore.strand = TRUE)
+  expect_equal(overlap, 1)
+})
+
+test_that("loci_overlap() returns correct values with assymetrical case", {
+  gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+  gr_2 <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"), IRanges::IRanges(c(15, 18), c(19, 25)), strand = "+")
+
+  overlap_a <- loci_overlap(gr_1, gr_2, ignore.strand = TRUE)
+  overlap_b <- loci_overlap(gr_2, gr_1, ignore.strand = TRUE)
+  expect_equal(overlap_a, 1)
+  expect_equal(overlap_b, 2)
+})
+
