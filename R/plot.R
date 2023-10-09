@@ -1,0 +1,95 @@
+
+## Plotting ----------
+
+#' Plot pairwise enrichment heatmap
+#'
+#' @inheritParams pairwise_enrichment
+#'
+#' @importFrom ggplot2 ggplot aes geom_tile labs theme_minimal scale_fill_viridis_c geom_text coord_fixed theme scale_y_discrete element_text
+#' @return ggplot object
+#' @export
+#'
+#' @examples
+#' gr_a1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-")
+#' gr_a2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+#'
+#' gr_b1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 24), strand = "-")
+#' gr_b2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(16, 25), strand = "+")
+#'
+#' gsize <- 30
+#'
+#' plot_pairwise_enrichment(
+#'   list("A" = gr_a1, "B" = gr_a2),
+#'   list("X" = gr_b1, "Y" = gr_b2),
+#'   genome_size = gsize,
+#'   ignore.strand = FALSE
+#' )
+plot_pairwise_enrichment <- function(grlist_1, grlist_2, genome_size, ignore.strand = TRUE) {
+  values <- pairwise_enrichment(grlist_1, grlist_2, genome_size, ignore.strand = TRUE)
+
+  ggplot(values, aes(x=!!quote(gr1), y=!!quote(gr2), fill=!!quote(enrichment), label = round(!!quote(enrichment), 2))) +
+    geom_tile(color="white", linewidth = 1) +
+    geom_text(color = "#aaaaaa") +
+    theme_minimal() +
+    scale_fill_viridis_c(option = "D") +
+    coord_fixed() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 0)) +
+    labs(x= "",
+         y = "",
+         title = "Pairwise enrichment heatmap",
+         caption = .package_caption(list(), list(), TRUE)) +
+    scale_y_discrete(limits=rev)
+}
+
+## Helpers ----------
+
+#' Make a string out of a named list.
+#'
+#' @param named_list A named list
+#' @return A string
+.key_value_string <- function(named_list) {
+  paste(names(named_list), lapply(named_list, .format_value), sep = ":", collapse = ", ")
+}
+
+
+.format_value <- function(v) {
+  if(is.numeric(v)) {
+    v <- sprintf("%.4f", v)
+    v <- sub("\\.?0+$", "", v)
+  }
+  v
+}
+
+#' Make a string out of a named list. Split into lines if too wide.
+#'
+#' @param named_list A named list
+#'
+#' @return A string
+.limited_size_caption_line <- function(named_list) {
+  size_limit <- 3
+  chunks <- split(named_list, ceiling(seq_along(named_list)/size_limit))
+  paste(vapply(chunks, .key_value_string, character(1)), collapse="\n")
+}
+
+
+#' Make a string to put as caption in verbose mode. Includes system date.
+#'
+#' @param params Named list with relevant parameters and their values
+#' @param outcome Named values with relevant outcomes and their values
+#' @param verbose Logical. If TRUE all information is printed. If FALSE returns
+#'   a blank caption.
+#' @importFrom utils packageVersion
+#' @return A caption string
+.package_caption <- function(params, outcome, verbose) {
+  if (verbose) {
+    verbose_params <- .limited_size_caption_line(params)
+    verbose_crop <- .limited_size_caption_line(outcome)
+
+    date <- format(Sys.time(), "%a %b %d %X %Y")
+    pkg_version <- paste("bedscout v.", packageVersion("bedscout"))
+    date <- paste(date, pkg_version, sep = ' - ')
+
+    paste(verbose_params, verbose_crop, date, sep = "\n\n")
+  }
+}
+
