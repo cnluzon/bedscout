@@ -56,3 +56,15 @@ test_that("combination_enrichment() yields correct values", {
   expect_equal(enrichment[enrichment$gr1 == "A" & enrichment$gr2 == "B", "enrichment"], 0)
   expect_equal(enrichment[enrichment$gr1 == "X" & enrichment$gr2 == "Y", "enrichment"], 0)
 })
+
+test_that("combinations_score() works with generic score function", {
+  gr_a1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-")
+  gr_a2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+  gr_a3 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+
+  score <- combinations_score(
+    list("A" = gr_a1, "B" = gr_a2, "C" = gr_a3),
+    function(x, y) { 1 }
+  )
+  expect_equal(score[score$gr1=="A" & score$gr2=="B", "score"], 1)
+})

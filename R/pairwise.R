@@ -69,22 +69,54 @@ pairwise_enrichment <- function(grlist_1, grlist_2, genome_size, ignore.strand =
 #'   ignore.strand = FALSE
 #' )
 combinations_enrichment <- function(grlist, genome_size, ignore.strand = TRUE) {
+  score_func <- purrr::partial(
+    fc_enrichment,
+    genome_size = genome_size,
+    ignore.strand = ignore.strand
+  )
+  df <- combinations_score(grlist, score_func)
+  names(df)[names(df) == "score"] <- "enrichment"
+  df
+}
+
+
+#' Apply a given score function to all pairs in a list of GRanges objects
+#'
+#' @param grlist named List of GRanges objects
+#' @param score_func Any scoring function (must take a pair of GRanges objects)
+#'
+#' @return A data frame
+#' @export
+#'
+#' @examples
+#' gr_a1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-")
+#' gr_a2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+#' gr_b1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 24), strand = "-")
+#'
+#' # Fix the function parameters
+#' score_func <- purrr::partial(
+#'   fc_enrichment,
+#'   genome_size = genome_size,
+#'   ignore.strand = ignore.strand
+#' )
+#'
+#' combinations_score
+#'   list("A" = gr_a1, "B" = gr_a2, "X" = gr_b1),
+#'   score_func
+#' )
+combinations_score <- function(grlist, score_func) {
   if (is.null(names(grlist))) {
     stop("GRanges list must be named")
   }
-
   combinations <- as.data.frame(t(combn(names(grlist),2, simplify = TRUE)))
   names(combinations) <- c("gr1", "gr2")
-
   result <- mapply(
-    fc_enrichment,
-    gr1 = grlist[combinations$gr1],
-    gr2 = grlist[combinations$gr2],
-    genome_size = genome_size,
-    ignore.strand = ignore.strand,
+    score_func,
+    grlist[combinations$gr1],
+    grlist[combinations$gr2],
     USE.NAMES = FALSE,
     SIMPLIFY = TRUE
   )
-
-  cbind(combinations, enrichment = result)
+  cbind(combinations, score = result)
 }
+
