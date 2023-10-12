@@ -3,7 +3,7 @@
 
 #' Plot pairwise enrichment heatmap
 #'
-#' @inheritParams pairwise_enrichment
+#' @inheritParams pairwise_score
 #'
 #' @importFrom ggplot2 ggplot aes geom_tile labs theme_minimal scale_fill_viridis_c geom_text coord_fixed theme scale_y_discrete element_text
 #' @return ggplot object
@@ -18,22 +18,23 @@
 #'
 #' gsize <- 30
 #'
-#' plot_pairwise_enrichment(
+#' score_func <- purrr::partial(fc_enrichment, genome_size = gsize, ignore.strand = TRUE)
+#'
+#' plot_pairwise_score(
 #'   list("A" = gr_a1, "B" = gr_a2),
 #'   list("X" = gr_b1, "Y" = gr_b2),
-#'   genome_size = gsize,
-#'   ignore.strand = FALSE
+#'   score_func
 #' )
-plot_pairwise_enrichment <- function(grlist_1, grlist_2, genome_size, ignore.strand = TRUE) {
+plot_pairwise_score <- function(grlist_1, grlist_2, score_func) {
   # seqInfo merge issues this annoying warning everytime two GRanges have
   # seqnames not in common, but this is a perfectly valid situation, because not
   # every GRanges object will encompass whole genome, so it does not really add
   # value and tends to fill console with warnings
   values <- suppressWarnings(
-    pairwise_enrichment(grlist_1, grlist_2, genome_size, ignore.strand = TRUE)
+    pairwise_score(grlist_1, grlist_2, score_func)
   )
 
-  ggplot(values, aes(x=!!quote(gr1), y=!!quote(gr2), fill=!!quote(enrichment), label = round(!!quote(enrichment), 2))) +
+  ggplot(values, aes(x=!!quote(gr1), y=!!quote(gr2), fill=!!quote(score), label = round(!!quote(score), 2))) +
     geom_tile(color="white", linewidth = 1) +
     geom_text(color = "#aaaaaa") +
     theme_minimal() +
