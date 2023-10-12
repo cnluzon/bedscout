@@ -25,7 +25,13 @@
 #'   ignore.strand = FALSE
 #' )
 plot_pairwise_enrichment <- function(grlist_1, grlist_2, genome_size, ignore.strand = TRUE) {
-  values <- pairwise_enrichment(grlist_1, grlist_2, genome_size, ignore.strand = TRUE)
+  # seqInfo merge issues this annoying warning everytime two GRanges have
+  # seqnames not in common, but this is a perfectly valid situation, because not
+  # every GRanges object will encompass whole genome, so it does not really add
+  # value and tends to fill console with warnings
+  values <- suppressWarnings(
+    pairwise_enrichment(grlist_1, grlist_2, genome_size, ignore.strand = TRUE)
+  )
 
   ggplot(values, aes(x=!!quote(gr1), y=!!quote(gr2), fill=!!quote(enrichment), label = round(!!quote(enrichment), 2))) +
     geom_tile(color="white", linewidth = 1) +
