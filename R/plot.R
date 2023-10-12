@@ -25,7 +25,13 @@
 #'   ignore.strand = FALSE
 #' )
 plot_pairwise_enrichment <- function(grlist_1, grlist_2, genome_size, ignore.strand = TRUE) {
-  values <- pairwise_enrichment(grlist_1, grlist_2, genome_size, ignore.strand = TRUE)
+  # seqInfo merge issues this annoying warning everytime two GRanges have
+  # seqnames not in common, but this is a perfectly valid situation, because not
+  # every GRanges object will encompass whole genome, so it does not really add
+  # value and tends to fill console with warnings
+  values <- suppressWarnings(
+    pairwise_enrichment(grlist_1, grlist_2, genome_size, ignore.strand = TRUE)
+  )
 
   ggplot(values, aes(x=!!quote(gr1), y=!!quote(gr2), fill=!!quote(enrichment), label = round(!!quote(enrichment), 2))) +
     geom_tile(color="white", linewidth = 1) +
@@ -39,6 +45,54 @@ plot_pairwise_enrichment <- function(grlist_1, grlist_2, genome_size, ignore.str
          title = "Pairwise enrichment heatmap",
          caption = .package_caption(list(), list(), TRUE)) +
     scale_y_discrete(limits=rev)
+}
+
+#' Plot triangular pairwise enrichment heatmap for a single GRanges list
+#'
+#' @importFrom ggplot2 ggplot aes geom_tile labs theme_minimal
+#' @importFrom ggplot2 scale_fill_viridis_c geom_text coord_fixed
+#' @importFrom ggplot2 theme scale_y_discrete element_text theme element_blank
+#' @inheritParams combinations_enrichment
+#' @return A ggplot object
+#' @export
+#'
+#' @examples
+#' gr_a1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-")
+#' gr_a2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+#'
+#' gr_b1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 24), strand = "-")
+#' gr_b2 <- GenomicRanges::GRanges(seqnames = c("chr3"), IRanges::IRanges(16, 25), strand = "+")
+#'
+#' plot_combinations_enrichment(
+#'   list("A" = gr_a1, "B" = gr_a2, "X" = gr_b1, "Y" = gr_b2),
+#'   genome_size = 30,
+#'   ignore.strand = FALSE
+#' )
+plot_combinations_enrichment <- function(grlist, genome_size, ignore.strand = TRUE) {
+  # seqInfo merge issues this annoying warning everytime two GRanges have no
+  # seqnames in common, but this is a perfectly valid situation, because not
+  # every GRanges object will encompass whole genome, so it does not really add
+  values <- suppressWarnings(
+    combinations_enrichment(grlist, genome_size, ignore.strand = TRUE)
+  )
+
+  ggplot(values, aes(
+      x = !!quote(gr1),
+      y = !!quote(gr2),
+      fill = !!quote(enrichment),
+      label = round(!!quote(enrichment), 2))) +
+    geom_tile(color="white", linewidth = 1) +
+    geom_text(color="#aaaaaa") +
+    theme_minimal() +
+    scale_fill_viridis_c(option = "D", limits = c(0, max(values$enrichment))) +
+    coord_fixed() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 0)) +
+    labs(x= "",
+         y = "",
+         title = "Pairwise enrichment heatmap",
+         caption = .package_caption(list(), list(), TRUE)) +
+    scale_y_discrete(limits=rev) +
+    theme(panel.grid = element_blank())
 }
 
 ## Helpers ----------
