@@ -74,3 +74,80 @@ impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.s
     keep.extra.columns = TRUE
   )
 }
+
+
+#' Annotates a GRanges object with nearby features in another GRanges object
+#'
+#' Distance is measured as distance from end and start depending whether the
+#' target locus is downstream or upstream.
+#'
+#' @param gr GRanges object to be annotated
+#' @param feat_gr GRanges features to be annotated.
+#' @param name_field Name of the column that contains the annotation name in feat_gr
+#' @param distance_cutoff Maximum distance around the promoter of the feature
+#' @param ignore.strand Ignore strand when annotating. Default FALSE
+#'
+#' @importFrom tibble rowid_to_column
+#' @importFrom IRanges findOverlaps
+#' @importFrom dplyr .data `%>%`
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#'
+#' @return A GRanges object with a nearby_features field in it containing names
+#'   of overlapping features in that distance range (separated by commas)
+#' @export
+#'
+#' @examples
+#'
+#' features_gr <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1", "chr1"),
+#'   IRanges::IRanges(c(10,22), c(20,30)),
+#'   strand = c("-", "-"),
+#'   name = c("Feat_A", "Feat_B")
+#' )
+#'
+#' gr <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1"),
+#'   IRanges::IRanges(15, 25),
+#'   strand = "+"
+#' )
+#'
+#' annotate_nearby_features(gr, features_gr, "name", ignore.strand = TRUE)
+annotate_nearby_features <- function(gr, feat_gr, name_field, distance_cutoff = 2500, ignore.strand = TRUE) {
+
+  # One would think there is a function to expand from the sides of intervals
+  expanded_gr <- purrr::reduce(
+    list(
+      GenomicRanges::flank(gr, distance_cutoff, start = TRUE),
+      gr,
+      GenomicRanges::flank(gr, distance_cutoff, start = FALSE)
+    ),
+    GenomicRanges::union,
+    ignore.strand = ignore.strand
+  )
+
+  nearest_hits <- data.frame(
+    findOverlaps(expanded_gr, feat_gr, ignore.strand = ignore.strand)
+  )
+
+  feat_df <- data.frame(feat_gr) %>%
+    tibble::rowid_to_column("gene_row") %>%
+    dplyr::select(dplyr::all_of(c("gene_row", name_field)))
+
+  id_cols <- c("seqnames", "start", "end", "width", "strand")
+  cols_select <- c(id_cols, name_field)
+
+  gr_found <- data.frame(gr[nearest_hits$queryHits, ]) %>%
+    dplyr::mutate(nearest_id = nearest_hits$subjectHits) %>%
+    dplyr::left_join(feat_df, by=c("nearest_id"="gene_row")) %>%
+    dplyr::select(dplyr::all_of(cols_select)) %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(id_cols))) %>%
+    dplyr::summarise("nearby_features" = paste(.data[[name_field]], collapse=","))
+
+  makeGRangesFromDataFrame(
+    data.frame(gr) %>% # if nearby_name exists in the input gr, drop it
+      dplyr::select(-dplyr::any_of("nearby_features")) %>%
+      dplyr::left_join(gr_found, by = id_cols),
+    keep.extra.columns = TRUE
+  )
+}
+

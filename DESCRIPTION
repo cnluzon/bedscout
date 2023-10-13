@@ -19,7 +19,8 @@ Imports: GenomicRanges,
     rtracklayer,
     utils,
     dplyr,
-    S4Vectors
+    S4Vectors,
+    tibble
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
