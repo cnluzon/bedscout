@@ -96,6 +96,39 @@ plot_combinations_score <- function(grlist, score_func) {
     theme(panel.grid = element_blank())
 }
 
+#' Plot a Euler diagram with intersections between GRanges objects
+#'
+#' Further parameters can be passed to the plot function (see plot.euler)
+#'
+#' @param grlist List of GRanges objects
+#' @param names Names to give the sets
+#' @param ignore.strand Whether to ignore strand for intersections
+#' @param fills Color fills for each set. Eulerr interpolates the intersections
+#' @importFrom eulerr euler
+#' @return A euler.diagram object that can be further processed, or plotted via print, ggsave
+#' @export
+#'
+#' @examples
+#' gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+#' gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+#' gr_3 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(16, 18), strand = "+")
+#' plot_euler(list(gr_1, gr_2, gr_3), names = c("a", "b", "c"))
+plot_euler <- function(grlist, names = NULL, ignore.strand = TRUE, fills = NULL) {
+  v_int <- calculate_venn_intersections(
+    grlist,
+    names = names,
+    ignore.strand = ignore.strand
+  )
+
+  plot_specs <- eulerr::euler(v_int, input = "union")
+
+  if (is.null(fills)) {
+    plot(plot_specs, quantities = TRUE)
+  } else {
+    plot(plot_specs, fills = fills, quantities = TRUE)
+  }
+}
+
 ## Helpers ----------
 
 #' Make a string out of a named list.
