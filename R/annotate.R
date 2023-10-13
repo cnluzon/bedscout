@@ -139,6 +139,7 @@ annotate_nearby_features <- function(gr, feat_gr, name_field, distance_cutoff = 
 #' @param gr GRanges object to be annotated
 #' @param feat_gr GRanges features to be annotated.
 #' @param name_field Name of the column that contains the annotation name in feat_gr
+#' @param minoverlap Minimum overlapping (used by GenomicRanges findOverlaps)
 #' @param ignore.strand Ignore strand when annotating. Default FALSE
 #'
 #' @importFrom tibble rowid_to_column

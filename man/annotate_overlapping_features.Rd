@@ -19,6 +19,8 @@ annotate_overlapping_features(
 
 \item{name_field}{Name of the column that contains the annotation name in feat_gr}
 
+\item{minoverlap}{Minimum overlapping (used by GenomicRanges findOverlaps)}
+
 \item{ignore.strand}{Ignore strand when annotating. Default FALSE}
 }
 \value{
