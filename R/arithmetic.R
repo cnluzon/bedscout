@@ -102,6 +102,10 @@ fc_enrichment <- function(gr1, gr2, genome_size, ignore.strand = TRUE) {
 #' @export
 #'
 #' @examples
+#' gr1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-")
+#' gr2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+#'
+#' loci_overlap(gr1, gr2)
 loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
    length(
      IRanges::subsetByOverlaps(gr1, gr2,
