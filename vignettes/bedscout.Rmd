@@ -1,0 +1,59 @@
+---
+title: "bedscout"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{bedscout}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Loci enrichment analysis with bedscout
+
+`bedscout` is a library that wraps some useful functionality around `BED` file
+annotations mostly in the shape of `GRanges` objects. Currently implemented 
+functions belong to one of the following categories:
+
+* **Arithmetic**: Overlap-related simple operations that can be performed
+between two `GRanges` objects, currently: `loci_overlap`, `bp_overlap`, 
+`fc_enrichment` and `jaccard_index`. 
+
+* **Pairwise**: Scoring functions to compare lists of `GRanges` in a pairwise
+all-to-all kind of manner. For these, `pairwise_score` computes any arbitrary
+score function (anything that takes two `GRanges` objects as inputs), including
+the ones mentioned above in the **arithmetic** section. This returns a data
+frame in long format (triplets gr1, gr2, score) that plays nice with plotting
+libraries like `ggplot2`. A fixed example of this is `pairwise_enrichment`, 
+which does exactly a `pairwise_score` with the scoring function fixed to 
+`fc_enrichment`.
+
+* **Annotate**: Intersect a `GRanges` object with corresponding named elements
+from another `GRanges`. This can be gene TSS, ChromHMM segmentations and anything
+really with a name field. These annotations can be done by proximity 
+(`annotate_nearby_feature`), overlap (`annotate_overlapping_features`), or 
+overlap maximizing jaccard index (`impute_feature`), especially useful for 
+genomic segmentations like ChromHMM.
+
+* **Venn**: Venn-diagram like operations. Right now, the only relevant function
+is `calculate_venn_intersections` which calculates the intersections of all 
+possible subsets in a `GRanges` list. This can be used to plot venn diagrams.
+
+* **Plot**: Some handy plotting functions - `plot_euler` makes use of `eulerr`
+package to make an Euler diagram of overlaps of a list of `GRanges` objects. 
+`plot_pairwise_score` and `plot_combinations_score` are matched to the pairwise
+operations and plot a heatmap with the specified score.
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(bedscout)
+```
