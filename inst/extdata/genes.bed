@@ -1,0 +1,5 @@
+chr1	150	2500	GeneA	.	+
+chr1	4300	5450	GeneB	.	-
+chr1	10000	11000	GeneC	.	-
+chr1	60300	60350	GeneD	.	+
+chr1	80220	81240	GeneE	.	+

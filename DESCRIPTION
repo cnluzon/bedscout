@@ -22,5 +22,9 @@ Imports: GenomicRanges,
     S4Vectors,
     tibble
 Suggests: 
+    knitr,
+    rmarkdown,
+    prettydoc,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+VignetteBuilder: knitr
