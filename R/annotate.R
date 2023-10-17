@@ -36,6 +36,12 @@
 #'
 #' impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
 impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.strand = TRUE) {
+  if ("feature" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges already has a feature field. Previous annotation will be dropped"
+    warning(msg)
+    gr$feature <- NULL
+  }
+
   # Again this problem with levels not exactly matching, which happens a lot
   hits <- suppressWarnings(
     findOverlaps(
@@ -178,6 +184,12 @@ annotate_overlapping_features <- function(gr, feat_gr, name_field, minoverlap = 
     )
   )
 
+  if ("nearby_features" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges was already annotated. Previous annotation will be dropped"
+    warning(msg)
+    gr$nearby_features <- NULL
+  }
+
   id_cols <- colnames(data.frame(gr))
 
   # Take the ranges from query and the names from subject hits, and then
@@ -185,10 +197,10 @@ annotate_overlapping_features <- function(gr, feat_gr, name_field, minoverlap = 
   annotated_hits <- cbind(
     data.frame(
       gr[S4Vectors::queryHits(hits), ]),
-    name = S4Vectors::mcols(feat_gr[S4Vectors::subjectHits(hits), ])[[name_field]]
+    annotated_name = S4Vectors::mcols(feat_gr[S4Vectors::subjectHits(hits), ])[[name_field]]
   ) %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(id_cols))) %>%
-    dplyr::summarise("nearby_features" = paste(unique(.data[["name"]]), collapse=","))
+    dplyr::summarise("nearby_features" = paste(unique(.data[["annotated_name"]]), collapse=","))
 
   # Left-join so the non-hits are kept
   makeGRangesFromDataFrame(
