@@ -178,6 +178,12 @@ annotate_overlapping_features <- function(gr, feat_gr, name_field, minoverlap = 
     )
   )
 
+  if ("nearby_features" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges was already annotated. Previous annotation will be dropped"
+    warning(msg)
+    gr$nearby_features <- NULL
+  }
+
   id_cols <- colnames(data.frame(gr))
 
   # Take the ranges from query and the names from subject hits, and then
