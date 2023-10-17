@@ -11,7 +11,19 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-## Loci enrichment analysis with bedscout
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(bedscout)
+```
+
+# Loci enrichment analysis with bedscout
 
 `bedscout` is a library that wraps some useful functionality around `BED` file
 annotations mostly in the shape of `GRanges` objects. Currently implemented 
@@ -46,14 +58,203 @@ package to make an Euler diagram of overlaps of a list of `GRanges` objects.
 `plot_pairwise_score` and `plot_combinations_score` are matched to the pairwise
 operations and plot a heatmap with the specified score.
 
+## Imputing elements from a genomic segmentation annotation
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+In many cases, one could have a set of genomic loci and would like to know what
+type of genomic features they overlap with. 
+
+`impute_features` takes a `GRanges` object and a named list of `GRanges`
+objects, one per interest feature type. One classic example of this is
+annotating genomic segmentations like ChromHMM. In those cases, it is almost
+always the case that each loci in our interest group overlaps with more than
+one feature, since genomic segmentations are partitions of the genome. 
+`impute_features` takes all the overlap and select what is estimated as best
+match, which is the one with maximal `jaccard_index`. This prevents flanking
+empty segments (usually tagged as "quiescent") from being preferred, as overlap
+tends to be significantly larger.
+
+```{r}
+genome_segment_file <- system.file(
+  "extdata",
+  "segments.bed",
+  package = "bedscout"
+)
+``` 
+
+`segments.bed` contains an example of the type of BED file, the `name` file
+must be a category (i.e. a gene annotation file where each locus has a different
+gene name would not be useful to process this way).
+
+```{r}
+cat(readLines(genome_segment_file), sep = '\n')
+```
+
+for instance:
+
+```{r}
+gr <- GenomicRanges::GRanges(
+  seqnames = c("chr1"),
+  IRanges::IRanges(4971, 5050),
+  strand = "+"
 )
 ```
 
-```{r setup}
-library(bedscout)
+Here we have a unique loci that completely contains a Type_C element but flanks
+also some overlap with larger Type_A loci. We can ask `bedscout` to impute
+the overlap that optimizes `jaccard_index`.
+
+```{r}
+# rtracklayer can import BED files into GRanges to use with impute_feature
+gr_features <- rtracklayer::import(genome_segment_file)
+gr_imputed <- impute_feature(gr, gr_features, "name")
+gr_imputed
 ```
+
+## Annotating features
+
+Instead of imputing genomic segments, one might be interested in nearby genes,
+for example. One can annotate those by using `annotate_nearby_features`. In this
+case, all features within a given distance will be annotated, their names will
+be comma-separated.
+
+```{r}
+peaks <- system.file(
+  "extdata",
+  "peaks_up.bed",
+  package = "bedscout"
+)
+
+genes <- system.file(
+  "extdata",
+  "genes.bed",
+  package = "bedscout"
+)
+
+peaks_gr <- rtracklayer::import(peaks)
+genes_gr <- rtracklayer::import(genes)
+annotate_nearby_features(
+  peaks_gr,
+  genes_gr,
+  "name",
+  distance_cutoff = 100,
+  ignore.strand = FALSE
+)
+```
+
+Note how, in the case of annotating genes, strand is probably relevant, whereas
+in the case of genomic segments, it can be ignored. Generally, `bedscout` will
+ignore strand unless stated otherwise, since there are many types of features 
+that are not strand-specific and their corresponding bed-files might not even
+have the field.
+
+## Pairwise scoring
+
+We could want to get a summary enrichment score of our `GRanges` object in each
+of the categories in our segments.bed instead. `bedscout` has a generic 
+`pairwise_score` function that takes two named lists of `GRanges` and provides
+all pairwise scoring values in a data.frame in a long format, that can be 
+easily plotted with `ggplot2`, for example.
+
+We can import `segments.bed` to a `GRanges` named list using
+`import_named_bed_into_list`:
+
+```{r}
+my_feature_list <- import_named_bed_into_list(genome_segment_file)
+```
+
+Now, `my_feature_list` contains one `GRanges` object for each `Type_A` to 
+`Type_F` elements:
+
+```{r}
+my_feature_list
+```
+
+Now, we might have two different groups of loci in another list:
+
+```{r}
+gr1 <- GenomicRanges::GRanges(
+  seqnames = c("chr1"),
+  IRanges::IRanges(4971, 5050),
+  strand = "+"
+)
+
+gr2 <- GenomicRanges::GRanges(
+  seqnames = c("chr1"),
+  IRanges::IRanges(10000, 10100),
+  strand = "-"
+)
+
+gr_list <- list("genes_up" = gr1, "genes_down" = gr2)
+```
+
+And then we can calculate the pairwise overlap:
+
+```{r}
+pairwise_score(
+  gr_list,
+  my_feature_list,
+  score_func = loci_overlap
+)
+```
+
+This can be manually plotted, or make some default plot by using 
+`plot_pairwise_score` function also included:
+
+```{r}
+plot_pairwise_score(
+  gr_list,
+  my_feature_list,
+  score_func = jaccard_index
+)
+```
+
+`score_func` can be any function that takes two `GRanges` objects and returns
+a numerical value. 
+
+## Combinations within the same list
+
+It could also be possible to check possible pairwise combinations between a 
+single list of `GRanges` elements, ignoring symmetrical calculations, provided
+that we use a score function that is commutative. If a non-commutative operation
+is specified, it cannot be guaranteed that the combinations will have a specific
+order.
+
+To illustrate this example, maybe you have three sets of peaks and want to
+know how they overlap:
+
+```{r}
+peak_files <- system.file(
+  "extdata",
+  package = "bedscout"
+) |> list.files(pattern = "peaks", full.names = TRUE)
+
+peak_grlist <- lapply(peak_files, rtracklayer::import)
+
+# Name your files:
+names(peak_grlist) <- basename(peak_files)
+```
+
+Now you can plot a pairwise enrichment, maybe fixing the function
+`fc_enrichment` with your genome size:
+
+```{r}
+gsize = 200000
+enrichment_func <- purrr::partial(fc_enrichment, genome_size = gsize)
+
+plot_combinations_score(
+  peak_grlist,
+  score = enrichment_func
+)
+```
+
+## Euler diagrams
+
+In cases where the amount of sets is not so large, one could want to check
+overlaps in the form of a venn diagram. This is done via the `eulerr` package,
+and the intersections calculated by `bedscout` making use of `GRanges`
+operations.
+
+```{r}
+plot_euler(peak_grlist, names = basename(peak_files))
+```
+
