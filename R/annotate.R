@@ -36,6 +36,12 @@
 #'
 #' impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
 impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.strand = TRUE) {
+  if ("feature" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges already has a feature field. Previous annotation will be dropped"
+    warning(msg)
+    gr$feature <- NULL
+  }
+
   # Again this problem with levels not exactly matching, which happens a lot
   hits <- suppressWarnings(
     findOverlaps(

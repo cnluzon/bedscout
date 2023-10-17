@@ -16,6 +16,49 @@ test_that("impute_feature() imputes best jaccard overlapping feature", {
   expect_equal(result$feature[1], "Feat_A")
 })
 
+test_that("impute_feature() does not fail with already named GRanges", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,22), c(20,30)),
+    strand = c("-", "-"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(15, 25),
+    strand = "+",
+    name = "my_range"
+  )
+
+  result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
+  expect_equal(result$feature[1], "Feat_A")
+})
+
+test_that("impute_feature() throws a warning and overwrites with already annotated GRanges", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,22), c(20,30)),
+    strand = c("-", "-"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(15, 25),
+    strand = "+",
+    feature = "my_range"
+  )
+
+  expect_warning(
+    result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE),
+    "Target GRanges already has a feature field. Previous annotation will be dropped"
+  )
+
+  expect_equal(result$feature[1], "Feat_A")
+})
+
+
 test_that("impute_feature() returns a GRanges object", {
   features_gr <- GenomicRanges::GRanges(
     seqnames = c("chr1", "chr1"),
