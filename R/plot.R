@@ -70,6 +70,9 @@ plot_pairwise_score <- function(grlist_1, grlist_2, score_func) {
 #'   score_func
 #' )
 plot_combinations_score <- function(grlist, score_func) {
+  # Sorting the grlist before forces triangle shape
+  grlist <- grlist[order(names(grlist))]
+
   # seqInfo merge issues this annoying warning everytime two GRanges have no
   # seqnames in common, but this is a perfectly valid situation, because not
   # every GRanges object will encompass whole genome, so it does not really add
