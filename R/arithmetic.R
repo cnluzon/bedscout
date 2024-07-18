@@ -114,3 +114,52 @@ loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
       )
     )
 }
+
+#' Find a consensus set of loci across a set of GRanges objects.
+#'
+#' Ignores strand.
+#'
+#' @param grlist List of GRanges for loci groups to be compared.
+#' @param min_consenus If a locus appears in at least min_consensus loci sets,
+#'   it will be kept. min_consensus must be a number between 1 and length(grlist)
+#' @param resize Resize the GRanges objects to a fixed size before the check.
+#'   If NULL or 0, the loci are not resized.
+#' @param anchor If resize, where to anchor. By default is set to center.
+#'
+#' @return A GRanges object with the consensus list.
+#' @importFrom dplyr filter
+#' @importFrom GenomicRanges coverage makeGRangesFromDataFrame reduce resize
+#' @importFrom methods as
+#' @export
+#'
+#' @examples
+loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "center") {
+  if (min_consensus < 1) {
+    stop(paste("min_consensus must be a positive number:", min_consensus))
+  }
+  if (min_consensus > length(grlist)) {
+    msg <- paste0(
+      "min_consensus must be smaller or equal to size of the list (",
+      length(grlist),
+      "), got ",
+      min_consensus
+    )
+    stop(msg)
+  }
+  if (!is.null(resize)) {
+    if (resize > 0) {
+      grlist <- lapply(grlist, GenomicRanges::resize, fix = anchor, width = resize)
+    }
+  }
+
+  cov_gr <- methods::as(GenomicRanges::coverage(do.call(c, grlist)), "GRanges") %>%
+    data.frame() %>%
+    dplyr::filter(.data$score >= min_consensus) %>%
+    makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+
+  # There might be adjacent ranges with different coverage that need to
+  # be merged after
+  cov_gr <- GenomicRanges::reduce(cov_gr)
+
+  cov_gr
+}
