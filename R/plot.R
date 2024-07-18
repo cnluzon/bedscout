@@ -107,6 +107,8 @@ plot_combinations_score <- function(grlist, score_func) {
 #' @param names Names to give the sets
 #' @param ignore.strand Whether to ignore strand for intersections
 #' @param fills Color fills for each set. Eulerr interpolates the intersections
+#' @param shape Which shape to use, either circle or ellipse. Circle is the
+#'   default, but ellipse is more likely to be accurate for a difficult fit.
 #' @importFrom eulerr euler
 #' @return A euler.diagram object that can be further processed, or plotted via print, ggsave
 #' @export
@@ -116,14 +118,14 @@ plot_combinations_score <- function(grlist, score_func) {
 #' gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
 #' gr_3 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(16, 18), strand = "+")
 #' plot_euler(list(gr_1, gr_2, gr_3), names = c("a", "b", "c"))
-plot_euler <- function(grlist, names = NULL, ignore.strand = TRUE, fills = NULL) {
+plot_euler <- function(grlist, names = NULL, ignore.strand = TRUE, fills = NULL, shape = "circle") {
   v_int <- calculate_venn_intersections(
     grlist,
     names = names,
     ignore.strand = ignore.strand
   )
 
-  plot_specs <- eulerr::euler(v_int, input = "union")
+  plot_specs <- eulerr::euler(v_int, input = "union", shape = shape)
 
   if (is.null(fills)) {
     plot(plot_specs, quantities = TRUE)
