@@ -27,8 +27,12 @@ However, if there is not highly fragmentation difference, results should not
 be extremely different.
 }
 \examples{
-gr1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-")
-gr2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+gr1 <- GenomicRanges::GRanges(
+  seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-"
+)
+gr2 <- GenomicRanges::GRanges(
+  seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+"
+)
 
 loci_overlap(gr1, gr2)
 }

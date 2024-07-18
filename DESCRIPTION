@@ -20,7 +20,8 @@ Imports: GenomicRanges,
     utils,
     dplyr,
     S4Vectors,
-    tibble
+    tibble,
+    methods
 Suggests: 
     knitr,
     rmarkdown,

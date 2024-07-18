@@ -102,8 +102,12 @@ fc_enrichment <- function(gr1, gr2, genome_size, ignore.strand = TRUE) {
 #' @export
 #'
 #' @examples
-#' gr1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-")
-#' gr2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+")
+#' gr1 <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1"), IRanges::IRanges(11, 20), strand = "-"
+#' )
+#' gr2 <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+"
+#' )
 #'
 #' loci_overlap(gr1, gr2)
 loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
@@ -115,12 +119,16 @@ loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
     )
 }
 
+# NOTE: Intentional left out importFrom GenomicRanges reduce, as it writes
+# two importFrom on the NAMESPACE that are for reduce functions and I get a
+# warning on the documentation check.
+
 #' Find a consensus set of loci across a set of GRanges objects.
 #'
 #' Ignores strand.
 #'
 #' @param grlist List of GRanges for loci groups to be compared.
-#' @param min_consenus If a locus appears in at least min_consensus loci sets,
+#' @param min_consensus If a locus appears in at least min_consensus loci sets,
 #'   it will be kept. min_consensus must be a number between 1 and length(grlist)
 #' @param resize Resize the GRanges objects to a fixed size before the check.
 #'   If NULL or 0, the loci are not resized.
@@ -128,11 +136,19 @@ loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
 #'
 #' @return A GRanges object with the consensus list.
 #' @importFrom dplyr filter
-#' @importFrom GenomicRanges coverage makeGRangesFromDataFrame reduce resize
+#' @importFrom GenomicRanges coverage makeGRangesFromDataFrame resize
 #' @importFrom methods as
 #' @export
 #'
 #' @examples
+#' gr1 <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1"), IRanges::IRanges(c(11, 20), c(15, 30)), strand = "-"
+#' )
+#' gr2 <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1"), IRanges::IRanges(24, 25), strand = "+"
+#' )
+#'
+#' loci_consensus(list(gr1, gr2), min_consensus = 2)
 loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "center") {
   .validate_min_consensus(length(grlist), min_consensus)
   if (!is.null(resize)) {
