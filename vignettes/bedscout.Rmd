@@ -30,8 +30,8 @@ annotations mostly in the shape of `GRanges` objects. Currently implemented
 functions belong to one of the following categories:
 
 * **Arithmetic**: Overlap-related simple operations that can be performed
-between two `GRanges` objects, currently: `loci_overlap`, `bp_overlap`, 
-`fc_enrichment` and `jaccard_index`. 
+between two or more `GRanges` objects, currently: `loci_overlap`, `bp_overlap`, 
+`fc_enrichment` and `jaccard_index`, `loci_consensus`.
 
 * **Pairwise**: Scoring functions to compare lists of `GRanges` in a pairwise
 all-to-all kind of manner. For these, `pairwise_score` computes any arbitrary
@@ -256,5 +256,27 @@ operations.
 
 ```{r}
 plot_euler(peak_grlist, names = basename(peak_files))
+```
+
+
+## Obtaining a consensus loci set out of a list of GRanges objects
+
+Sometimes you might want to obtain a genomic annotation that is a consensus of 
+a group of annotations. The typical example of this is peaks called over a set
+of replicates. For that, you can use the `loci_consensus` function, which takes
+a list of GRanges objects and returns a single GRanges object with the consensus
+loci. The parameters to the function are `min_consensus`, which defaults to 1.
+This means that any locus that appears in at least one of the lists will be
+considered, so it is equivalent to merging all the ranges.
+
+```{r}
+loci_consensus(peak_grlist, min_consensus = 3)
+```
+
+It is also possible to resize the ranges to a fixed size before getting the 
+consensus list:
+
+```{r}
+loci_consensus(peak_grlist, min_consensus = 2, resize = 500, anchor = "start")
 ```
 
