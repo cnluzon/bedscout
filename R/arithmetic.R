@@ -134,18 +134,7 @@ loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
 #'
 #' @examples
 loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "center") {
-  if (min_consensus < 1) {
-    stop(paste("min_consensus must be a positive number:", min_consensus))
-  }
-  if (min_consensus > length(grlist)) {
-    msg <- paste0(
-      "min_consensus must be smaller or equal to size of the list (",
-      length(grlist),
-      "), got ",
-      min_consensus
-    )
-    stop(msg)
-  }
+  .validate_min_consensus(length(grlist), min_consensus)
   if (!is.null(resize)) {
     if (resize > 0) {
       grlist <- lapply(grlist, GenomicRanges::resize, fix = anchor, width = resize)
@@ -162,4 +151,21 @@ loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "c
   cov_gr <- GenomicRanges::reduce(cov_gr)
 
   cov_gr
+}
+
+## Helpers --------------
+
+.validate_min_consensus <- function(list_length, min_consensus) {
+  if (min_consensus < 1) {
+    stop(paste("min_consensus must be a positive number:", min_consensus))
+  }
+  if (min_consensus > list_length) {
+    msg <- paste0(
+      "min_consensus must be smaller or equal to size of the list (",
+      list_length,
+      "), got ",
+      min_consensus
+    )
+    stop(msg)
+  }
 }
