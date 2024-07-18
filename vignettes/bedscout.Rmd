@@ -250,13 +250,38 @@ plot_combinations_score(
 ## Euler diagrams
 
 In cases where the amount of sets is not so large, one could want to check
-overlaps in the form of a venn diagram. This is done via the `eulerr` package,
+overlaps in the form of an Euler diagram. This is done via the `eulerr` package,
 and the intersections calculated by `bedscout` making use of `GRanges`
 operations.
 
 ```{r}
 plot_euler(peak_grlist, names = basename(peak_files))
 ```
+
+It is possible to set the shape of the circles to be ellipses, to facilitate
+difficult fits:
+
+```{r}
+plot_euler(peak_grlist, names = basename(peak_files), shape = "ellipse")
+
+```
+
+As you can see in the figure, the "1" intersection has a more similar size
+to half of the "2", which is what we want. Note that some combinations might
+not be possible to draw, and keep and eye for possible inconsistencies. 
+
+The wonderful `eulerr` package has built-in diagnostics functions,
+like error_plot. To check if your euler plot is accurately drawn, you can 
+call `fit_values` instead and use the `error_plot` function to check it.
+
+```{r}
+fit_values <- fit_euler(peak_grlist, names = basename(peak_files), shape = "circle")
+eulerr::error_plot(fit_values)
+```
+
+The size that "1" intersection is underrepresented. Check out
+`eulerr` package [on CRAN](https://cran.r-project.org/web/packages/eulerr/index.html)
+for more details about how these are calculated.
 
 
 ## Obtaining a consensus loci set out of a list of GRanges objects
