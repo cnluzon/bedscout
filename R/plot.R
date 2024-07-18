@@ -119,19 +119,35 @@ plot_combinations_score <- function(grlist, score_func) {
 #' gr_3 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(16, 18), strand = "+")
 #' plot_euler(list(gr_1, gr_2, gr_3), names = c("a", "b", "c"))
 plot_euler <- function(grlist, names = NULL, ignore.strand = TRUE, fills = NULL, shape = "circle") {
-  v_int <- calculate_venn_intersections(
-    grlist,
-    names = names,
-    ignore.strand = ignore.strand
-  )
-
-  plot_specs <- eulerr::euler(v_int, input = "union", shape = shape)
+  plot_specs <- fit_euler(grlist, names = names, ignore.strand = ignore.strand, shape = shape)
 
   if (is.null(fills)) {
     plot(plot_specs, quantities = TRUE)
   } else {
     plot(plot_specs, fills = fills, quantities = TRUE)
   }
+}
+
+#' Find a fit for a set of intersections in the form of an euler object.
+#'
+#' @inheritParams plot_euler
+#'
+#' @return An euler object
+#' @export
+#'
+#' @examples
+#' gr_1 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(10, 20), strand = "-")
+#' gr_2 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(15, 25), strand = "+")
+#' gr_3 <- GenomicRanges::GRanges(seqnames = c("chr1"), IRanges::IRanges(16, 18), strand = "+")
+#' fit_euler(list(gr_1, gr_2, gr_3), names = c("a", "b", "c"))
+fit_euler <- function(grlist, names = NULL, ignore.strand = TRUE, shape = "circle") {
+  v_int <- calculate_venn_intersections(
+    grlist,
+    names = names,
+    ignore.strand = ignore.strand
+  )
+
+  eulerr::euler(v_int, input = "union", shape = shape)
 }
 
 ## Helpers ----------
