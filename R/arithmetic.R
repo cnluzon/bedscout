@@ -150,14 +150,14 @@ loci_overlap <- function(gr1, gr2, ignore.strand = TRUE, minoverlap = 1L) {
 #'
 #' loci_consensus(list(gr1, gr2), min_consensus = 2)
 loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "center") {
+
   .validate_min_consensus(length(grlist), min_consensus)
   if (!is.null(resize)) {
     if (resize > 0) {
       grlist <- lapply(grlist, GenomicRanges::resize, fix = anchor, width = resize)
     }
   }
-
-  cov_gr <- methods::as(GenomicRanges::coverage(do.call(c, grlist)), "GRanges") %>%
+  cov_gr <- methods::as(GenomicRanges::coverage(do.call(c, unname(grlist))), "GRanges") %>%
     data.frame() %>%
     dplyr::filter(.data$score >= min_consensus) %>%
     makeGRangesFromDataFrame(keep.extra.columns = TRUE)
@@ -165,7 +165,6 @@ loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "c
   # There might be adjacent ranges with different coverage that need to
   # be merged after
   cov_gr <- GenomicRanges::reduce(cov_gr)
-
   cov_gr
 }
 

@@ -199,6 +199,29 @@ test_that("loci_consensus() filters by coverage", {
   expect_equal(consensus[1, ], overlap)
 })
 
+test_that("loci_consensus() works with named list", {
+  gr_1 <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1", "chr1"),
+    IRanges::IRanges(c(1, 7, 12), c(4, 9, 14)),
+    strand = "-"
+  )
+  gr_2 <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(5, 8),
+    strand = "+"
+  )
+
+  overlap <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(7, 8),
+    strand = "*"
+  )
+
+  consensus <- loci_consensus(list("A"=gr_1, "B"=gr_2), min_consensus = 2)
+  expect_equal(length(consensus), 1)
+  expect_equal(consensus[1, ], overlap)
+})
+
 test_that("loci_consensus() returns correct result with resize", {
   gr_1 <- GenomicRanges::GRanges(
     seqnames = c("chr1", "chr1", "chr1"),
