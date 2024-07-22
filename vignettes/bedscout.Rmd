@@ -1,9 +1,7 @@
 ---
 title: "bedscout"
 output:
-  prettydoc::html_pretty:
-    theme: cayman
-    highlight: github
+  rmarkdown::html_vignette:
     toc: true
 vignette: >
   %\VignetteIndexEntry{bedscout}
@@ -15,6 +13,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  fig.width = 5,
+  fig.height = 5,
   comment = "#>"
 )
 ```
