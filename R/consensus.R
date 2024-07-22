@@ -48,7 +48,66 @@ loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "c
   cov_gr
 }
 
+
+#' Peaks universe for a set of conditions and replicates
+#'
+#' @param peak_files A list where each element is a list of peak files
+#' @param min_consensus Minimum consensus needed to merge peaks from the same condition (replicates)
+#' @param resize_pre Resize replicate peaks before calling consensus - Default NULL
+#' @param resize_across Resize peaks before merging across conditions.
+#'   Resizing to a small size here will make sure that proximal peaks will not
+#'   get merged, but might incur in certain level of overlap if resize_post is
+#'   larger.
+#' @param resize_post Resize final group of peaks to a fixed size. Default NULL
+#' @param anchor Where to anchor for resizing. Defaults to center.
+#'
+#' @return A GRanges objects with the peaks universe
+#' @export
+#'
+peaks_universe <- function(peak_files, min_consensus, resize_pre, resize_across, resize_post = NULL, anchor = "center") {
+  peaks <- lapply(peak_files, .import_peaklist)
+  gr_universe(peaks, min_consensus, resize_pre, resize_across, resize_post, anchor)
+}
+
+
+#' GRanges universe for a set of conditions and replicates
+#'
+#' @param grlist A list where each element is a list of GRanges objects
+#' @inheritParams peaks_universe
+#' @export
+gr_universe <- function(grlist, min_consensus, resize_pre = NULL, resize_across = NULL, resize_post = NULL, anchor = "center") {
+  peaks_merged <- lapply(
+    grlist,
+    loci_consensus,
+    min_consensus = min_consensus,
+    resize = resize_pre,
+    anchor = anchor
+  )
+
+  peaks_universe <- loci_consensus(
+    peaks_merged,
+    min_consensus = 1,
+    resize = resize_across,
+    anchor = anchor
+  )
+
+  .resize_gr(peaks_universe, resize_post, anchor)
+}
+
 ## Helpers --------------
+.import_peaklist <- function(peakfiles) {
+  lapply(peakfiles, rtracklayer::import)
+}
+
+.resize_gr <- function(gr, size, anchor) {
+  result <- gr
+  if (!is.null(size)) {
+    if (size > 0) {
+      result <- GenomicRanges::resize(gr, size, fix = anchor)
+    }
+  }
+  result
+}
 
 .validate_min_consensus <- function(list_length, min_consensus) {
   if (min_consensus < 1) {
