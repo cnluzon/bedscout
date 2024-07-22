@@ -1,3 +1,8 @@
+# bedscout 0.0.0.9005 - 22/07/2024
+
+* vignettes now use default format HTML vignette.
+* prettydoc suggestion is now removed.
+
 # bedscout 0.0.0.9004 - 22/07/2024
 
 * peaks_universe function makes use of loci_consensus to obtain a universe of
