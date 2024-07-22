@@ -1,3 +1,8 @@
+# bedscout 0.0.0.9004 - 22/07/2024
+
+* peaks_universe function makes use of loci_consensus to obtain a universe of
+peaks across conditions and replicates.
+
 # bedscout 0.0.0.9003 - 18/07/2024
 
 * plot_euler now accepts shape allowing for more complex diagrams.
