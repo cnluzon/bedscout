@@ -64,7 +64,7 @@ loci_consensus <- function(grlist, min_consensus = 1, resize = NULL, anchor = "c
 #' @return A GRanges objects with the peaks universe
 #' @export
 #'
-peaks_universe <- function(peak_files, min_consensus, resize_pre, resize_across, resize_post = NULL, anchor = "center") {
+peaks_universe <- function(peak_files, min_consensus, resize_pre = NULL, resize_across = NULL, resize_post = NULL, anchor = "center") {
   peaks <- lapply(peak_files, .import_peaklist)
   gr_universe(peaks, min_consensus, resize_pre, resize_across, resize_post, anchor)
 }

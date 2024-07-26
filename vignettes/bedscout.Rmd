@@ -305,3 +305,16 @@ consensus list:
 loci_consensus(peak_grlist, min_consensus = 2, resize = 500, anchor = "start")
 ```
 
+You can also generate a peak universe by merging across replicates by consensus
+and then joining loci that appear in any of the conditions. This type of 
+operation can be used to prepare for differential peak analysis or other 
+strategies like PCA:
+
+```{r}
+peaks_list <- list(
+  "condition_A" = peak_files[1:2],
+  "condition_B" = peak_files[2:3]
+)
+
+peaks_universe(peaks_list, min_consensus = 2)
+```
