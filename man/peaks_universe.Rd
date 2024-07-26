@@ -7,8 +7,8 @@
 peaks_universe(
   peak_files,
   min_consensus,
-  resize_pre,
-  resize_across,
+  resize_pre = NULL,
+  resize_across = NULL,
   resize_post = NULL,
   anchor = "center"
 )
