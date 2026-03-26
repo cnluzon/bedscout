@@ -280,3 +280,105 @@ test_that("annotate_nearby_features() does not give far overlaps", {
 
   expect_true(is.na(result$nearby_features[[1]]))
 })
+
+
+test_that("annotate_nearest_features() reports overlapping features (distance == 0)", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,22), c(20,30)),
+    strand = c("+", "+"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(15, 25),
+    strand = "+"
+  )
+
+  result <- annotate_nearest_features(
+    gr,
+    features_gr,
+    "name"
+  )
+
+  expect_equal(result$nearby_features[[1]], "Feat_A,Feat_B")
+  # Only one value is reported since distance is the same for both features
+  expect_equal(result$distance[[1]], 0)
+})
+
+test_that("annotate_nearest_features() does not report overlaps in different strand when ignore.strand == FALSE", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,22), c(20,30)),
+    strand = c("-", "-"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(15, 25),
+    strand = "+"
+  )
+
+  result <- annotate_nearest_features(
+    gr,
+    features_gr,
+    "name",
+    ignore.strand = FALSE
+  )
+
+  expect_true(is.na(result$nearby_features[[1]]))
+  expect_true(is.na(result$distance[[1]]))
+})
+
+test_that("annotate_nearest_features() reports the closest feature", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,22), c(20,30)),
+    strand = c("+", "+"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(5, 7),
+    strand = "+"
+  )
+
+  result <- annotate_nearest_features(
+    gr,
+    features_gr,
+    "name"
+  )
+
+  expect_equal(result$nearby_features[[1]], "Feat_A")
+  # Note that the distance is the empty "units" since GRanges are 1-based closed
+  # intervals. [5, 7] vs [10, 22] leaves only 2
+  expect_equal(result$distance[[1]], 2)
+})
+
+
+test_that("annotate_nearest_features() reports the closest feature at the correct strand", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,22), c(20,30)),
+    strand = c("-", "+"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(5, 7),
+    strand = "+"
+  )
+
+  result <- annotate_nearest_features(
+    gr,
+    features_gr,
+    "name",
+    ignore.strand = FALSE
+  )
+
+  expect_equal(result$nearby_features[[1]], "Feat_B")
+})
