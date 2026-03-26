@@ -147,6 +147,21 @@ ignore strand unless stated otherwise, since there are many types of features
 that are not strand-specific and their corresponding bed-files might not even
 have the field.
 
+It is possible to just annotate the closest feature by using the function
+`annotate_nearest_features`. This will return the closest (upstream or downstream)
+feature and will add also a `distance` field to the GRanges in case you want
+to inspect that or make some stats about it:
+
+```{r}
+annotate_nearest_features(
+  peaks_gr,
+  genes_gr,
+  "name",
+  ignore.strand = FALSE
+)
+```
+
+
 ## Pairwise scoring
 
 We could want to get a summary enrichment score of our `GRanges` object in each
