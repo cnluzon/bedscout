@@ -136,6 +136,72 @@ annotate_nearby_features <- function(gr, feat_gr, name_field, distance_cutoff = 
   )
 }
 
+#' Annotate the closest feature
+#'
+#' This works similar as annotate nearby features but is
+#'
+#' @param gr Query GRanges object to annotate
+#' @param feat_gr Features to annotate it with
+#' @param name_field Name of the column in feat_gr to get the name from
+#' @param ignore.strand Whether to report loci from any strand or only matching.
+#'   By default it is set to true.
+#'
+#' @returns gr with extra column "nearby_features" annotated
+#' @importFrom GenomicRanges nearest
+#' @export
+#'
+#' @examples
+#'
+#' features_gr <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1", "chr1"),
+#'   IRanges::IRanges(c(10,22), c(20,30)),
+#'   strand = c("-", "-"),
+#'   name = c("Feat_A", "Feat_B")
+#' )
+#'
+#' gr <- GenomicRanges::GRanges(
+#'   seqnames = c("chr1"),
+#'   IRanges::IRanges(15, 25),
+#'   strand = "+"
+#' )
+#'
+#' annotate_nearest_features(gr, features_gr, "name")
+annotate_nearest_features <- function(gr, feat_gr, name_field, ignore.strand = TRUE) {
+  # Again this problem with levels not exactly matching, which happens a lot
+  hits <- suppressWarnings(
+    GenomicRanges::nearest(
+      gr,
+      feat_gr,
+      select = "all",
+      ignore.strand = ignore.strand
+    )
+  )
+
+  if ("nearby_features" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges was already annotated. Previous annotation will be dropped"
+    warning(msg)
+    gr$nearby_features <- NULL
+  }
+
+  id_cols <- colnames(data.frame(gr))
+
+  # Take the ranges from query and the names from subject hits, and then
+  # comma-collapse the names
+  annotated_hits <- cbind(
+    data.frame(
+      gr[S4Vectors::queryHits(hits), ]),
+    annotated_name = S4Vectors::mcols(feat_gr[S4Vectors::subjectHits(hits), ])[[name_field]]
+  ) %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(id_cols))) %>%
+    dplyr::summarise("nearby_features" = paste(unique(.data[["annotated_name"]]), collapse=","))
+
+  # Left-join so the non-hits are kept
+  makeGRangesFromDataFrame(
+    data.frame(gr) %>%
+      dplyr::left_join(data.frame(annotated_hits), by = id_cols),
+    keep.extra.columns = TRUE
+  )
+}
 
 #' Annotates a GRanges object with overlapping features in another GRanges object
 #'
