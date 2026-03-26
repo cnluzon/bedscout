@@ -146,8 +146,9 @@ annotate_nearby_features <- function(gr, feat_gr, name_field, distance_cutoff = 
 #' @param ignore.strand Whether to report loci from any strand or only matching.
 #'   By default it is set to true.
 #'
-#' @returns gr with extra column "nearby_features" annotated
-#' @importFrom GenomicRanges nearest
+#' @returns gr with extra column "nearby_features" and "distance" annotated
+#' @importFrom GenomicRanges distanceToNearest
+#' @importFrom dplyr `%>%` summarise first group_by all_of left_join
 #' @export
 #'
 #' @examples
@@ -169,7 +170,7 @@ annotate_nearby_features <- function(gr, feat_gr, name_field, distance_cutoff = 
 annotate_nearest_features <- function(gr, feat_gr, name_field, ignore.strand = TRUE) {
   # Again this problem with levels not exactly matching, which happens a lot
   hits <- suppressWarnings(
-    GenomicRanges::nearest(
+    GenomicRanges::distanceToNearest(
       gr,
       feat_gr,
       select = "all",
@@ -183,6 +184,12 @@ annotate_nearest_features <- function(gr, feat_gr, name_field, ignore.strand = T
     gr$nearby_features <- NULL
   }
 
+  if ("distance" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges was already annotated. Previous annotation will be dropped"
+    warning(msg)
+    gr$distance <- NULL
+  }
+
   id_cols <- colnames(data.frame(gr))
 
   # Take the ranges from query and the names from subject hits, and then
@@ -190,10 +197,14 @@ annotate_nearest_features <- function(gr, feat_gr, name_field, ignore.strand = T
   annotated_hits <- cbind(
     data.frame(
       gr[S4Vectors::queryHits(hits), ]),
-    annotated_name = S4Vectors::mcols(feat_gr[S4Vectors::subjectHits(hits), ])[[name_field]]
+      annotated_name = S4Vectors::mcols(feat_gr[S4Vectors::subjectHits(hits), ])[[name_field]],
+      distance = hits@elementMetadata$distance
   ) %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(id_cols))) %>%
-    dplyr::summarise("nearby_features" = paste(unique(.data[["annotated_name"]]), collapse=","))
+    dplyr::summarise(
+      "nearby_features" = paste(unique(.data[["annotated_name"]]), collapse=","),
+      "distance"= dplyr::first(.data[["distance"]]) # distance is the same if we get multiple hits
+    )
 
   # Left-join so the non-hits are kept
   makeGRangesFromDataFrame(

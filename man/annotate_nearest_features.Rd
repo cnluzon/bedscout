@@ -17,7 +17,7 @@ annotate_nearest_features(gr, feat_gr, name_field, ignore.strand = TRUE)
 By default it is set to true.}
 }
 \value{
-gr with extra column "nearby_features" annotated
+gr with extra column "nearby_features" and "distance" annotated
 }
 \description{
 This works similar as annotate nearby features but is

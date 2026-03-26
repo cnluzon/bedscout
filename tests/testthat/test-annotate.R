@@ -303,6 +303,8 @@ test_that("annotate_nearest_features() reports overlapping features (distance ==
   )
 
   expect_equal(result$nearby_features[[1]], "Feat_A,Feat_B")
+  # Only one value is reported since distance is the same for both features
+  expect_equal(result$distance[[1]], 0)
 })
 
 test_that("annotate_nearest_features() does not report overlaps in different strand when ignore.strand == FALSE", {
@@ -327,6 +329,7 @@ test_that("annotate_nearest_features() does not report overlaps in different str
   )
 
   expect_true(is.na(result$nearby_features[[1]]))
+  expect_true(is.na(result$distance[[1]]))
 })
 
 test_that("annotate_nearest_features() reports the closest feature", {
@@ -350,6 +353,9 @@ test_that("annotate_nearest_features() reports the closest feature", {
   )
 
   expect_equal(result$nearby_features[[1]], "Feat_A")
+  # Note that the distance is the empty "units" since GRanges are 1-based closed
+  # intervals. [5, 7] vs [10, 22] leaves only 2
+  expect_equal(result$distance[[1]], 2)
 })
 
 
