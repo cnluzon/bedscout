@@ -1,3 +1,8 @@
+# bedscout 0.0.0.9006 - 26/03/2026
+
+* annotate_nearest_features function that reports closest feature to query 
+GenomicRanges object and distance.
+
 # bedscout 0.0.0.9005 - 22/07/2024
 
 * vignettes now use default format HTML vignette.
