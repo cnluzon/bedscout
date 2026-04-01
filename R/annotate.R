@@ -1,16 +1,20 @@
 
-#' Annotate each locus in a GRanges with the single best overlap in another
+#' Annotate each locus in a GRanges with the best overlap in another
 #' feature GRanges. Best overlap is calculated as jaccard index:
 #'
 #' length(intersect) / length(union)
+#'
+#' If there are ties in jaccard index, ties_policy decides what is returned.
 #'
 #' @param gr GRanges to annotate
 #' @param feature_gr GRanges with features - Needs to have a name field
 #' @param name_field Name of the column that contains the feature names in feature_gr
 #' @param minoverlap Minimum overlap to consider.
 #' @param ignore.strand Whether to ignore strand on annotation.
+#' @param with_ties Return ties or return just one result per range? Defaults to
+#'    True.
 #'
-#' @importFrom S4Vectors Pairs queryHits
+#' @importFrom S4Vectors Pairs queryHits mcols
 #' @importFrom GenomicRanges findOverlaps pintersect punion makeGRangesFromDataFrame
 #' @importFrom IRanges findOverlaps
 #' @importFrom dplyr `%>%` .data
@@ -35,7 +39,7 @@
 #' )
 #'
 #' impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
-impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.strand = TRUE) {
+impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.strand = TRUE, with_ties = TRUE) {
   if ("feature" %in% names(GenomicRanges::mcols(gr))) {
     msg <- "Target GRanges already has a feature field. Previous annotation will be dropped"
     warning(msg)
@@ -64,16 +68,20 @@ impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.s
     ) %>%
     dplyr::rename(score = 3) %>%
     dplyr::group_by(queryHits) %>%
-    dplyr::slice_max(.data$score, na_rm = TRUE)
+    dplyr::slice_max(.data$score, na_rm = TRUE, with_ties = with_ties)
 
   best_annotated_df <- cbind(
     cbind(
       data.frame(gr[annotated_hits$queryHits, ]),
       feature = data.frame(feature_gr)[annotated_hits$subjectHits, name_field]
     ), score = annotated_hits$score
-  )
+  ) %>%
+    dplyr::summarise(
+      feature = paste(sort(unique(.data$feature)), collapse = ","),
+      .by = all_of(c("seqnames", "start", "end", "strand", "score", "width"))
+    )
 
-  id_cols <- colnames(data.frame(gr))
+  id_cols <- setdiff(colnames(data.frame(gr)), colnames(S4Vectors::mcols(gr)))
   makeGRangesFromDataFrame(
     data.frame(gr) %>%
       dplyr::left_join(data.frame(best_annotated_df), by = id_cols),

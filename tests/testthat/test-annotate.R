@@ -16,6 +16,61 @@ test_that("impute_feature() imputes best jaccard overlapping feature", {
   expect_equal(result$feature[1], "Feat_A")
 })
 
+test_that("impute_feature() returns all jaccard overlapping features if with_ties == TRUE", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,20), c(21,31)),
+    strand = c("-", "-"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(9, 35),
+    strand = "+"
+  )
+
+  result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = TRUE)
+  expect_equal(result$feature[1], "Feat_A,Feat_B")
+})
+
+test_that("impute_feature() returns all jaccard overlapping features (deduplicated) if with_ties == TRUE", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1", "chr1"),
+    IRanges::IRanges(c(10,20,30), c(21,31,41)),
+    strand = c("-", "-", "-"),
+    name = c("Feat_A", "Feat_B", "Feat_A")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(9, 55),
+    strand = "+"
+  )
+
+  result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = TRUE)
+  expect_equal(result$feature[1], "Feat_A,Feat_B")
+})
+
+
+test_that("impute_feature() returns first jaccard overlapping features if with_ties == FALSE", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,20), c(21,31)),
+    strand = c("-", "-"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(9, 35),
+    strand = "+"
+  )
+
+  result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = FALSE)
+  expect_equal(result$feature[1], "Feat_A")
+})
+
 test_that("impute_feature() does not fail with already named GRanges", {
   features_gr <- GenomicRanges::GRanges(
     seqnames = c("chr1", "chr1"),
