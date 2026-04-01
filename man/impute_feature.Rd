@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotate.R
 \name{impute_feature}
 \alias{impute_feature}
-\title{Annotate each locus in a GRanges with the single best overlap in another
+\title{Annotate each locus in a GRanges with the best overlap in another
 feature GRanges. Best overlap is calculated as jaccard index:}
 \usage{
 impute_feature(
@@ -10,7 +10,8 @@ impute_feature(
   feature_gr,
   name_field,
   minoverlap = 1L,
-  ignore.strand = TRUE
+  ignore.strand = TRUE,
+  with_ties = TRUE
 )
 }
 \arguments{
@@ -23,6 +24,9 @@ impute_feature(
 \item{minoverlap}{Minimum overlap to consider.}
 
 \item{ignore.strand}{Whether to ignore strand on annotation.}
+
+\item{with_ties}{Return ties or return just one result per range? Defaults to
+True.}
 }
 \value{
 GRanges gr annotated with a "feature" metadata column with the name
@@ -30,6 +34,9 @@ of the feature that best overlaps with it, NA if none do.
 }
 \description{
 length(intersect) / length(union)
+}
+\details{
+If there are ties in jaccard index, ties_policy decides what is returned.
 }
 \examples{
 
