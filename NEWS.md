@@ -1,3 +1,8 @@
+# bedscout 0.0.0.9007 - 01/04/2026
+
+* impute_feature now has a with_ties parameter to refine edge case behavior 
+where several loci have the same overlapping score.
+
 # bedscout 0.0.0.9006 - 26/03/2026
 
 * annotate_nearest_features function that reports closest feature to query 
