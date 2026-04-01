@@ -71,7 +71,7 @@ one feature, since genomic segmentations are partitions of the genome.
 `impute_features` takes all the overlap and select what is estimated as best
 match, which is the one with maximal `jaccard_index`. This prevents flanking
 empty segments (usually tagged as "quiescent") from being preferred, as overlap
-tends to be significantly larger.
+tends to be significantly larger. 
 
 ```{r}
 genome_segment_file <- system.file(
@@ -109,6 +109,13 @@ gr_features <- rtracklayer::import(genome_segment_file)
 gr_imputed <- impute_feature(gr, gr_features, "name")
 gr_imputed
 ```
+
+Additionally, one can specify how ties are handled, in the unusual case that 
+a locus has the same jaccard score for more than one of the loci it overlaps 
+with. By default, `impute_features` parameter `with_ties` equals to `TRUE`, 
+which means all ties are reported as a comma separated list (of unique features).
+If `with_ties` is set to `FALSE` only one of such features is reported.
+
 
 ## Annotating features
 
