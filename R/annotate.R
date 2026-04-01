@@ -77,8 +77,8 @@ impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.s
     ), score = annotated_hits$score
   ) %>%
     dplyr::summarise(
-      feature = paste(.data$feature, collapse = ","),
-      .by = c(.data$seqnames, .data$start, .data$end, .data$strand, .data$score, .data$width)
+      feature = paste(sort(unique(.data$feature)), collapse = ","),
+      .by = all_of(c("seqnames", "start", "end", "strand", "score", "width"))
     )
 
   id_cols <- setdiff(colnames(data.frame(gr)), colnames(S4Vectors::mcols(gr)))
