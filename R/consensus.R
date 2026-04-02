@@ -87,9 +87,14 @@ gr_universe <- function(grlist, min_consensus, resize_pre = NULL, resize_across 
     anchor = anchor
   )
 
+  list_names <- names(peaks_merged)
+  if (is.null(list_names)) {
+    list_names <- paste0("list", seq(1, length(peaks_merged)) |> as.character())
+  }
+
   peaks_merged <- purrr::map2(
     peaks_merged,
-    names(peaks_merged),
+    list_names,
     purrr::partial(.add_mcol, colname = "source")
   )
 
