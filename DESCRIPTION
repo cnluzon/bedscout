@@ -21,7 +21,9 @@ Imports: GenomicRanges,
     dplyr,
     S4Vectors,
     tibble,
-    methods
+    methods,
+    plyranges,
+    rlang
 Suggests: 
     knitr,
     rmarkdown,

@@ -72,7 +72,10 @@ peaks_universe <- function(peak_files, min_consensus, resize_pre = NULL, resize_
 
 #' GRanges universe for a set of conditions and replicates
 #'
-#' @param grlist A list where each element is a list of GRanges objects
+#' @param grlist A list where each element is a list of GRanges objects. If
+#'    the list is named, a source column will be added to the final consensus
+#' @importFrom plyranges reduce_ranges
+#' @importFrom purrr partial map2 reduce
 #' @inheritParams peaks_universe
 #' @export
 gr_universe <- function(grlist, min_consensus, resize_pre = NULL, resize_across = NULL, resize_post = NULL, anchor = "center") {
@@ -84,17 +87,26 @@ gr_universe <- function(grlist, min_consensus, resize_pre = NULL, resize_across 
     anchor = anchor
   )
 
-  peaks_universe <- loci_consensus(
+  peaks_merged <- purrr::map2(
     peaks_merged,
-    min_consensus = 1,
-    resize = resize_across,
-    anchor = anchor
+    names(peaks_merged),
+    purrr::partial(.add_mcol, colname = "source")
   )
+
+  peaks_universe <- peaks_merged |>
+    purrr::reduce(base::c) |>
+    plyranges::reduce_ranges(source = paste(sort(unique(source)), collapse = ","))
 
   .resize_gr(peaks_universe, resize_post, anchor)
 }
 
 ## Helpers --------------
+#' @importFrom rlang :=
+#' @importFrom plyranges mutate
+.add_mcol <- function(gr, colname, value) {
+  gr |> plyranges::mutate(!!colname := value)
+}
+
 .import_peaklist <- function(peakfiles) {
   lapply(peakfiles, rtracklayer::import)
 }

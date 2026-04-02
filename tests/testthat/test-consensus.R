@@ -191,17 +191,20 @@ test_that("gr_universe() returns correct result in example case", {
 
   universe <- GenomicRanges::GRanges(
     seqnames = c("chr1", "chr1"),
-    IRanges::IRanges(c(4, 9), c(5, 11))
+    IRanges::IRanges(c(4, 9), c(5, 11)),
+    source = c("A", "B")
   )
 
   universe_23 <- GenomicRanges::GRanges(
     seqnames = c("chr1", "chr1", "chr1"),
-    IRanges::IRanges(c(4, 9, 17), c(6, 12, 19))
+    IRanges::IRanges(c(4, 9, 17), c(6, 12, 19)),
+    source = c("A", "B", "A")
   )
 
   universe_any <- GenomicRanges::GRanges(
     seqnames = c("chr1", "chr1", "chr1"),
-    IRanges::IRanges(c(2, 9, 16), c(7, 13, 20))
+    IRanges::IRanges(c(2, 9, 16), c(7, 13, 20)),
+    source = c("A", "A,B", "A")
   )
 
   computed <- gr_universe(grlist, min_consensus = 3)

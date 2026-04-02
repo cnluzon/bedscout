@@ -14,7 +14,8 @@ gr_universe(
 )
 }
 \arguments{
-\item{grlist}{A list where each element is a list of GRanges objects}
+\item{grlist}{A list where each element is a list of GRanges objects. If
+the list is named, a source column will be added to the final consensus}
 
 \item{min_consensus}{Minimum consensus needed to merge peaks from the same condition (replicates)}
 
