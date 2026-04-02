@@ -107,9 +107,9 @@ gr_universe <- function(grlist, min_consensus, resize_pre = NULL, resize_across 
 
 ## Helpers --------------
 #' @importFrom rlang :=
-#' @importFrom plyranges mutate
+#' @importFrom dplyr mutate `%>%`
 .add_mcol <- function(gr, colname, value) {
-  gr |> plyranges::mutate(!!colname := value)
+  gr %>% mutate(!!colname := value)
 }
 
 .import_peaklist <- function(peakfiles) {
