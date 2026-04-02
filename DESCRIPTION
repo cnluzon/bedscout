@@ -1,6 +1,6 @@
 Package: bedscout
 Title: Simple arithmetic and visualizations on BED files
-Version: 0.0.0.9007
+Version: 0.0.0.9008
 Authors@R: 
     person("Carmen", "Navarro", , "carmen.navarro@scilifelab.se", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5438-9654"))
@@ -21,7 +21,9 @@ Imports: GenomicRanges,
     dplyr,
     S4Vectors,
     tibble,
-    methods
+    methods,
+    plyranges,
+    rlang
 Suggests: 
     knitr,
     rmarkdown,

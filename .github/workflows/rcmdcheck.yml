@@ -13,7 +13,7 @@ jobs:
   R-CMD-check:
     runs-on: ubuntu-latest
     # Docker Hub image that `R-CMD-check` executes in
-    container: cnluzon/bioconductor_bedscout:latest
+    container: cnluzon/bedscout:latest
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}

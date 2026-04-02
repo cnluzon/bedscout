@@ -225,7 +225,7 @@ test_that("annotate_nearby_features() gives correct features", {
     ignore.strand = TRUE
   )
 
-  expect_equal(result$nearby_features[[1]], "Feat_A,Feat_B")
+  expect_equal(result$annotation[[1]], "Feat_A,Feat_B")
 })
 
 
@@ -251,7 +251,7 @@ test_that("annotate_nearby_features() gives correct features", {
     ignore.strand = TRUE
   )
 
-  expect_equal(result$nearby_features[[1]], "b,c,d")
+  expect_equal(result$annotation[[1]], "b,c,d")
 })
 
 test_that("annotate_nearby_features() does not crash when target also has a name field", {
@@ -277,7 +277,7 @@ test_that("annotate_nearby_features() does not crash when target also has a name
     ignore.strand = TRUE
   )
 
-  expect_equal(result$nearby_features[[1]], "b,c,d")
+  expect_equal(result$annotation[[1]], "b,c,d")
   expect_true("name" %in% names(GenomicRanges::mcols(result)))
 })
 
@@ -293,7 +293,7 @@ test_that("annotate_nearby_features() throws a warning and overwrites when nearb
     seqnames = c("chr2", "chr3", "chr1"),
     IRanges::IRanges(c(55, 45, 35), c(85, 80, 75)),
     strand = "+",
-    nearby_features = c("A", "B", "C")
+    annotation = c("A", "B", "C")
   )
 
   expect_warning(
@@ -305,11 +305,9 @@ test_that("annotate_nearby_features() throws a warning and overwrites when nearb
       ignore.strand = TRUE
     ), "Target GRanges was already annotated. Previous annotation will be dropped")
 
-  expect_equal(result$nearby_features[[1]], "b,c,d")
+  expect_equal(result$annotation[[1]], "b,c,d")
 
 })
-
-
 
 test_that("annotate_nearby_features() does not give far overlaps", {
   features_gr <- GenomicRanges::GRanges(
@@ -333,7 +331,7 @@ test_that("annotate_nearby_features() does not give far overlaps", {
     ignore.strand = TRUE
   )
 
-  expect_true(is.na(result$nearby_features[[1]]))
+  expect_true(is.na(result$annotation[[1]]))
 })
 
 
@@ -357,7 +355,7 @@ test_that("annotate_nearest_features() reports overlapping features (distance ==
     "name"
   )
 
-  expect_equal(result$nearby_features[[1]], "Feat_A,Feat_B")
+  expect_equal(result$annotation[[1]], "Feat_A,Feat_B")
   # Only one value is reported since distance is the same for both features
   expect_equal(result$distance[[1]], 0)
 })
@@ -383,7 +381,7 @@ test_that("annotate_nearest_features() does not report overlaps in different str
     ignore.strand = FALSE
   )
 
-  expect_true(is.na(result$nearby_features[[1]]))
+  expect_true(is.na(result$annotation[[1]]))
   expect_true(is.na(result$distance[[1]]))
 })
 
@@ -407,7 +405,7 @@ test_that("annotate_nearest_features() reports the closest feature", {
     "name"
   )
 
-  expect_equal(result$nearby_features[[1]], "Feat_A")
+  expect_equal(result$annotation[[1]], "Feat_A")
   # Note that the distance is the empty "units" since GRanges are 1-based closed
   # intervals. [5, 7] vs [10, 22] leaves only 2
   expect_equal(result$distance[[1]], 2)
@@ -435,5 +433,5 @@ test_that("annotate_nearest_features() reports the closest feature at the correc
     ignore.strand = FALSE
   )
 
-  expect_equal(result$nearby_features[[1]], "Feat_B")
+  expect_equal(result$annotation[[1]], "Feat_B")
 })

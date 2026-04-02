@@ -130,11 +130,7 @@ annotate_nearby_features <- function(gr, feat_gr, name_field, distance_cutoff = 
 
   # We only want to get overlaps so no need to merge overlapping things, which
   # complicates calculation. Later only unique names are kept
-  expanded_feat_gr <- c(
-      GenomicRanges::flank(feat_gr, distance_cutoff, start = TRUE),
-      feat_gr,
-      GenomicRanges::flank(feat_gr, distance_cutoff, start = FALSE)
-    )
+  expanded_feat_gr <- feat_gr + distance_cutoff
 
   annotate_overlapping_features(
     gr,
@@ -186,10 +182,10 @@ annotate_nearest_features <- function(gr, feat_gr, name_field, ignore.strand = T
     )
   )
 
-  if ("nearby_features" %in% names(GenomicRanges::mcols(gr))) {
+  if ("annotation" %in% names(GenomicRanges::mcols(gr))) {
     msg <- "Target GRanges was already annotated. Previous annotation will be dropped"
     warning(msg)
-    gr$nearby_features <- NULL
+    gr$annotation <- NULL
   }
 
   if ("distance" %in% names(GenomicRanges::mcols(gr))) {
@@ -210,7 +206,7 @@ annotate_nearest_features <- function(gr, feat_gr, name_field, ignore.strand = T
   ) %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(id_cols))) %>%
     dplyr::summarise(
-      "nearby_features" = paste(unique(.data[["annotated_name"]]), collapse=","),
+      "annotation" = paste(unique(.data[["annotated_name"]]), collapse=","),
       "distance"= dplyr::first(.data[["distance"]]) # distance is the same if we get multiple hits
     )
 
@@ -269,10 +265,10 @@ annotate_overlapping_features <- function(gr, feat_gr, name_field, minoverlap = 
     )
   )
 
-  if ("nearby_features" %in% names(GenomicRanges::mcols(gr))) {
+  if ("annotation" %in% names(GenomicRanges::mcols(gr))) {
     msg <- "Target GRanges was already annotated. Previous annotation will be dropped"
     warning(msg)
-    gr$nearby_features <- NULL
+    gr$annotation <- NULL
   }
 
   id_cols <- colnames(data.frame(gr))
@@ -285,7 +281,7 @@ annotate_overlapping_features <- function(gr, feat_gr, name_field, minoverlap = 
     annotated_name = S4Vectors::mcols(feat_gr[S4Vectors::subjectHits(hits), ])[[name_field]]
   ) %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(id_cols))) %>%
-    dplyr::summarise("nearby_features" = paste(unique(.data[["annotated_name"]]), collapse=","))
+    dplyr::summarise("annotation" = paste(unique(.data[["annotated_name"]]), collapse=","))
 
   # Left-join so the non-hits are kept
   makeGRangesFromDataFrame(
