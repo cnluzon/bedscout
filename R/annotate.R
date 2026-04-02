@@ -130,11 +130,7 @@ annotate_nearby_features <- function(gr, feat_gr, name_field, distance_cutoff = 
 
   # We only want to get overlaps so no need to merge overlapping things, which
   # complicates calculation. Later only unique names are kept
-  expanded_feat_gr <- c(
-      GenomicRanges::flank(feat_gr, distance_cutoff, start = TRUE),
-      feat_gr,
-      GenomicRanges::flank(feat_gr, distance_cutoff, start = FALSE)
-    )
+  expanded_feat_gr <- feat_gr + distance_cutoff
 
   annotate_overlapping_features(
     gr,
