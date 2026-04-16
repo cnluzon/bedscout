@@ -40,10 +40,16 @@
 #'
 #' impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
 impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.strand = TRUE, with_ties = TRUE) {
-  if ("feature" %in% names(GenomicRanges::mcols(gr))) {
-    msg <- "Target GRanges already has a feature field. Previous annotation will be dropped"
+  if ("annotation" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges already has an annotation field. Previous annotation will be dropped"
     warning(msg)
-    gr$feature <- NULL
+    gr$annotation <- NULL
+  }
+
+  if ("impute_score" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges already has a impute_score field. Previous annotation will be dropped"
+    warning(msg)
+    gr$impute_score <- NULL
   }
 
   # Again this problem with levels not exactly matching, which happens a lot
@@ -66,19 +72,19 @@ impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.s
   annotated_hits <- cbind(
       data.frame(hits), scores
     ) %>%
-    dplyr::rename(score = 3) %>%
+    dplyr::rename(impute_score = 3) %>%
     dplyr::group_by(queryHits) %>%
-    dplyr::slice_max(.data$score, na_rm = TRUE, with_ties = with_ties)
+    dplyr::slice_max(.data$impute_score, na_rm = TRUE, with_ties = with_ties)
 
   best_annotated_df <- cbind(
     cbind(
       data.frame(gr[annotated_hits$queryHits, ]),
-      feature = data.frame(feature_gr)[annotated_hits$subjectHits, name_field]
-    ), score = annotated_hits$score
+      annotation = data.frame(feature_gr)[annotated_hits$subjectHits, name_field]
+    ), impute_score = annotated_hits$impute_score
   ) %>%
     dplyr::summarise(
-      feature = paste(sort(unique(.data$feature)), collapse = ","),
-      .by = all_of(c("seqnames", "start", "end", "strand", "score", "width"))
+      annotation = paste(sort(unique(.data$annotation)), collapse = ","),
+      .by = all_of(c("seqnames", "start", "end", "strand", "impute_score", "width"))
     )
 
   id_cols <- setdiff(colnames(data.frame(gr)), colnames(S4Vectors::mcols(gr)))

@@ -13,7 +13,7 @@ test_that("impute_feature() imputes best jaccard overlapping feature", {
   )
 
   result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
-  expect_equal(result$feature[1], "Feat_A")
+  expect_equal(result$annotation[1], "Feat_A")
 })
 
 test_that("impute_feature() returns all jaccard overlapping features if with_ties == TRUE", {
@@ -31,7 +31,30 @@ test_that("impute_feature() returns all jaccard overlapping features if with_tie
   )
 
   result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = TRUE)
-  expect_equal(result$feature[1], "Feat_A,Feat_B")
+  expect_equal(result$annotation[1], "Feat_A,Feat_B")
+})
+
+test_that("impute_feature() throws a warning if query GRanges already has a impute_score column", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,20), c(21,31)),
+    strand = c("-", "-"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(9, 35),
+    strand = "+",
+    name = c("gene_A"),
+    impute_score = c(0)
+  )
+
+  expect_warning(
+    result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = TRUE),
+    "Target GRanges already has a impute_score field. Previous annotation will be dropped"
+  )
+  expect_equal(result$annotation[1], "Feat_A,Feat_B")
 })
 
 test_that("impute_feature() returns all jaccard overlapping features (deduplicated) if with_ties == TRUE", {
@@ -49,7 +72,7 @@ test_that("impute_feature() returns all jaccard overlapping features (deduplicat
   )
 
   result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = TRUE)
-  expect_equal(result$feature[1], "Feat_A,Feat_B")
+  expect_equal(result$annotation[1], "Feat_A,Feat_B")
 })
 
 
@@ -68,7 +91,7 @@ test_that("impute_feature() returns first jaccard overlapping features if with_t
   )
 
   result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = FALSE)
-  expect_equal(result$feature[1], "Feat_A")
+  expect_equal(result$annotation[1], "Feat_A")
 })
 
 test_that("impute_feature() does not fail with already named GRanges", {
@@ -87,7 +110,7 @@ test_that("impute_feature() does not fail with already named GRanges", {
   )
 
   result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
-  expect_equal(result$feature[1], "Feat_A")
+  expect_equal(result$annotation[1], "Feat_A")
 })
 
 test_that("impute_feature() throws a warning and overwrites with already annotated GRanges", {
@@ -102,15 +125,15 @@ test_that("impute_feature() throws a warning and overwrites with already annotat
     seqnames = c("chr1"),
     IRanges::IRanges(15, 25),
     strand = "+",
-    feature = "my_range"
+    annotation = "my_range"
   )
 
   expect_warning(
     result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE),
-    "Target GRanges already has a feature field. Previous annotation will be dropped"
+    "Target GRanges already has an annotation field. Previous annotation will be dropped"
   )
 
-  expect_equal(result$feature[1], "Feat_A")
+  expect_equal(result$annotation[1], "Feat_A")
 })
 
 
@@ -147,7 +170,7 @@ test_that("impute_feature() returns a NA if no overlaps are found", {
   )
 
   result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
-  expect_true(is.na(result$feature[1]))
+  expect_true(is.na(result$annotation[1]))
 })
 
 test_that("impute_feature() throws no warnings if no overlapping seqnames", {
@@ -201,7 +224,7 @@ test_that("impute_feature() returns correct values with ignore.strand = FALSE", 
   )
 
   result <- impute_feature(gr, features_gr, "name", ignore.strand = FALSE)
-  expect_equal(result$feature[1], "Feat_B")
+  expect_equal(result$annotation[1], "Feat_B")
 })
 
 test_that("annotate_nearby_features() gives correct features", {
