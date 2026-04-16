@@ -1,3 +1,12 @@
+# bedscout 0.0.0.9009 - 16/04/2026
+
+* impute_feature now outputs impute_score column instead of score to avoid conflict
+with usual column names. It also checks for impute_score column in the query
+genomic ranges and throws a warning on overwrite.
+
+* Fix: impute_feature actually outputs column named "annotation" instead of 
+"feature".
+
 # bedscout 0.0.0.9008 - 02/04/2026
 
 * gr_universe now returns a source column that is a comma separated list of 
@@ -5,7 +14,6 @@ the provenance label. If no label is assigned, generic labels will be added.
 * impute_feature, annotate_nearest_features, annotate_overlapping_features,
 annotate_nearby_features, all return a "annotation" column instead of the old
 "nearby_features".
-
 
 # bedscout 0.0.0.9007 - 01/04/2026
 
