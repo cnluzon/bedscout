@@ -40,10 +40,10 @@
 #'
 #' impute_feature(gr, features_gr, "name", ignore.strand = TRUE)
 impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.strand = TRUE, with_ties = TRUE) {
-  if ("feature" %in% names(GenomicRanges::mcols(gr))) {
-    msg <- "Target GRanges already has a feature field. Previous annotation will be dropped"
+  if ("annotation" %in% names(GenomicRanges::mcols(gr))) {
+    msg <- "Target GRanges already has an annotation field. Previous annotation will be dropped"
     warning(msg)
-    gr$feature <- NULL
+    gr$annotation <- NULL
   }
 
   if ("impute_score" %in% names(GenomicRanges::mcols(gr))) {
@@ -79,11 +79,11 @@ impute_feature <- function(gr, feature_gr, name_field, minoverlap = 1L, ignore.s
   best_annotated_df <- cbind(
     cbind(
       data.frame(gr[annotated_hits$queryHits, ]),
-      feature = data.frame(feature_gr)[annotated_hits$subjectHits, name_field]
+      annotation = data.frame(feature_gr)[annotated_hits$subjectHits, name_field]
     ), impute_score = annotated_hits$impute_score
   ) %>%
     dplyr::summarise(
-      feature = paste(sort(unique(.data$feature)), collapse = ","),
+      annotation = paste(sort(unique(.data$annotation)), collapse = ","),
       .by = all_of(c("seqnames", "start", "end", "strand", "impute_score", "width"))
     )
 
