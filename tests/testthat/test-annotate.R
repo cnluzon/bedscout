@@ -34,6 +34,29 @@ test_that("impute_feature() returns all jaccard overlapping features if with_tie
   expect_equal(result$feature[1], "Feat_A,Feat_B")
 })
 
+test_that("impute_feature() throws a warning if query GRanges already has a impute_score column", {
+  features_gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1", "chr1"),
+    IRanges::IRanges(c(10,20), c(21,31)),
+    strand = c("-", "-"),
+    name = c("Feat_A", "Feat_B")
+  )
+
+  gr <- GenomicRanges::GRanges(
+    seqnames = c("chr1"),
+    IRanges::IRanges(9, 35),
+    strand = "+",
+    name = c("gene_A"),
+    impute_score = c(0)
+  )
+
+  expect_warning(
+    result <- impute_feature(gr, features_gr, "name", ignore.strand = TRUE, with_ties = TRUE),
+    "Target GRanges already has a impute_score field. Previous annotation will be dropped"
+  )
+  expect_equal(result$feature[1], "Feat_A,Feat_B")
+})
+
 test_that("impute_feature() returns all jaccard overlapping features (deduplicated) if with_ties == TRUE", {
   features_gr <- GenomicRanges::GRanges(
     seqnames = c("chr1", "chr1", "chr1"),
