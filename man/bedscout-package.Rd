@@ -8,8 +8,20 @@
 \description{
 bedscout is a small toolset to calculate intersection statistics among BED files and/or GRanges objects and visualize them in a comprehensive way.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://cnluzon.github.io/bedscout/}
+}
+
+}
 \author{
 \strong{Maintainer}: Carmen Navarro \email{carmen.navarro@scilifelab.se} (\href{https://orcid.org/0000-0001-5438-9654}{ORCID})
+
+Authors:
+\itemize{
+  \item Carmen Navarro \email{carmen.navarro@scilifelab.se} (\href{https://orcid.org/0000-0001-5438-9654}{ORCID})
+}
 
 }
 \keyword{internal}

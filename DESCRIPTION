@@ -10,7 +10,6 @@ Description: bedscout is a small toolset to calculate intersection statistics
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports: GenomicRanges,
     IRanges,
     purrr,
@@ -30,3 +29,5 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+URL: https://cnluzon.github.io/bedscout/
+Config/roxygen2/version: 8.0.0
